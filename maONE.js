@@ -61,7 +61,7 @@ renderer.setClearColor(0xffffff);
 document.body.appendChild(renderer.domElement);
 
 // add lights
-scene.add(new THREE.AmbientLight(0x666666, 0.5));
+// scene.add(new THREE.AmbientLight(0x666666, 0.5));
 const dirLight = new THREE.DirectionalLight(0xaaaaaa);
 dirLight.position.set(5, 12, 8);
 dirLight.castShadow = true;
