@@ -2,8 +2,13 @@ import * as THREE from "three";
 import Stats from "three/examples/jsm/libs/stats.module";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import GUI from "lil-gui";
+import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
+// import {CSS2DRenderer, CSS2DObject} from "three/examples/jsm/renderers/CSS2DRenderer.js";
 
-const textureLoader = new THREE.TextureLoader(); 
+let object;
+const manager = new THREE.LoadingManager(loadModel );
+
+const textureLoader = new THREE.TextureLoader(manager); 
 const rugTexture = textureLoader.load('/assets/textures/imports/rug.png') 
 rugTexture.wrapS = THREE.MirroredRepeatWrapping; // horizontal wrapping
 rugTexture.wrapT = THREE.MirroredRepeatWrapping; // vertical wrapping
@@ -51,6 +56,13 @@ const camera = new THREE.PerspectiveCamera(
   camera.position.z = 8;
   camera.position.y = 2;
 
+//html
+// const labelRenderer = new CSS2DRenderer();
+// labelRenderer.setSize(window.innerWidth, window.innerHeight);
+// labelRenderer.domElement.style.top = '0px';
+// document.body.appendChild(labelRenderer.domElement);
+
+
 // setup the renderer and attach to canvas
 const renderer = new THREE.WebGLRenderer();
 renderer.shadowMap.enabled = true;
@@ -61,11 +73,11 @@ renderer.setClearColor(0xffffff);
 document.body.appendChild(renderer.domElement);
 
 // add lights
-// scene.add(new THREE.AmbientLight(0x666666, 0.5));
+scene.add(new THREE.AmbientLight(0x666666, 0.2));
 const dirLight = new THREE.DirectionalLight(0xaaaaaa);
 dirLight.position.set(5, 12, 8);
 dirLight.castShadow = true;
-dirLight.intensity = 0.9;
+dirLight.intensity = 1;
 dirLight.shadow.camera.near = 0.1;
 dirLight.shadow.camera.far = 200;
 dirLight.shadow.camera.right = 10;
@@ -74,8 +86,8 @@ dirLight.shadow.camera.top = 10;
 dirLight.shadow.camera.bottom = -10;
 dirLight.shadow.mapSize.width = 512;
 dirLight.shadow.mapSize.height = 512;
-dirLight.shadow.radius = 4;
-dirLight.shadow.bias = -0.0005;
+dirLight.shadow.radius = 20;
+dirLight.shadow.bias = -0.1;
 
 scene.add(dirLight);
 
@@ -140,6 +152,36 @@ for (let i=0; i < 4; i++) {
 scene.add(group);
 
 
+// chair
+const loader = new OBJLoader(manager);
+loader.load ('/assets/womp/chair/chair.obj', function ( chair ) {
+  object = chair;
+  scene.add(chair);
+}
+)
+
+const texture = textureLoader.load('/assets/womp/chair/model.mtl' );
+texture.colorSpace = THREE.SRGBColorSpace;
+
+function loadModel() {
+
+  object.traverse( function ( child ) {
+
+    if ( child.isMesh ) child.material.map = texture;
+
+  } );
+
+  object.position.x = 17;
+  object.position.y = -1.5;
+  object.position.z = -20;
+  object.rotation.set(0, Math.PI, 0);
+  object.scale.setScalar( 0.05 );
+  scene.add( object );
+
+  render();
+
+}
+
 // create a ground plane
 const groundGeometry = new THREE.PlaneBufferGeometry(80, 60);
 // const groundMaterial = new THREE.MeshLambertMaterial({
@@ -185,12 +227,22 @@ controller.maxPolarAngle = (2 * Math.PI) / 4;
 // }
 
 // render the scene
+
+
 renderer.render(scene, camera);
 function animate() {
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
   controller.update();
+  // labelRenderer.render(scene, camera);
 }
 animate();
 
-// renderer.render(scene, camera)
+// window.addEventListener('resize', function() {
+//   camera.aspect = window.innerWidth / window.innerHeight;
+//   camera.updateProjectionMatrix();
+//   renderer.setSize(window.innerWidth, window.innerHeight);
+//   labelRenderer.setSize(this.window.innerWidth, this.window.innerHeight);
+// });
+
+// // renderer.render(scene, camera)
