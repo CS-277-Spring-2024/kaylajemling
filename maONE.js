@@ -3,9 +3,12 @@ import Stats from "three/examples/jsm/libs/stats.module";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import GUI from "lil-gui";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
+import {MTLLoader} from "three/examples/jsm/loaders/MTLLoader.js";
+
 // import {CSS2DRenderer, CSS2DObject} from "three/examples/jsm/renderers/CSS2DRenderer.js";
 
 let object;
+let knuffle;
 const manager = new THREE.LoadingManager(loadModel );
 
 const textureLoader = new THREE.TextureLoader(manager); 
@@ -48,9 +51,9 @@ scene.backgroundColor = 0xffffff;
 // setup camera
 const camera = new THREE.PerspectiveCamera(
   50,
-    window.innerWidth / window.innerHeight,
-    0.1,
-    1000
+    window.innerWidth / window.innerHeight,
+    0.1,
+    1000
   );
   camera.position.x = 15;
   camera.position.z = 8;
@@ -154,14 +157,11 @@ scene.add(group);
 
 // chair
 const loader = new OBJLoader(manager);
-loader.load ('/assets/womp/chair/chair.obj', function ( chair ) {
+loader.load ('/assets/models/chair/chair.obj', function ( chair ) {
   object = chair;
   scene.add(chair);
 }
 )
-
-const texture = textureLoader.load('/assets/womp/chair/model.mtl' );
-texture.colorSpace = THREE.SRGBColorSpace;
 
 function loadModel() {
 
@@ -171,16 +171,56 @@ function loadModel() {
 
   } );
 
-  object.position.x = 17;
+  object.position.x = 15;
   object.position.y = -1.5;
   object.position.z = -20;
   object.rotation.set(0, Math.PI, 0);
   object.scale.setScalar( 0.05 );
+  knuffle.position.x = 9;
+  knuffle.position.y = -1.5;
+  knuffle.position.z = -20;
+  knuffle.scale.setScalar(0.02);
   scene.add( object );
+  scene.add (knuffle)
+
+//   for (let i=0; i < 2; i++) {
+//     let x = 17+i*2;
+//     let y = -1.5;
+//     let z = -20;
+//     object.position.set(x,y,z);
+//     object.rotation.set(0, Math.PI, 0);
+//     object.scale.setScalar( 0.05 );
+//     scene.add(object);
+
+//   }
 
   render();
 
 }
+
+loader.load ('/assets/womp/lamp/lamp.obj', function ( lamp ) {
+  knuffle = lamp;
+  scene.add(lamp);
+}
+)
+
+const mtlLoader = new MTLLoader();
+const texture = textureLoader.load('/assets/models/chair/model.mtl' );
+texture.colorSpace = THREE.SRGBColorSpace;
+
+mtlLoader.load('/assets/models/chair/model.mtl' , function(materials) {
+  materials.preload();
+
+  // Initialize OBJLoader
+  objLoader.setMaterials(materials); // Set the loaded materials to OBJLoader
+  objLoader.load('/assets/models/chair/chair.obj', function(object) {
+      object.scale.set(0.01, 0.01, 0.01); // Scale to half size in all dimensions
+      scene.add(object);
+      object.position.set(0, 0, 0); // Adjust position if needed
+  });
+});
+
+
 
 // create a ground plane
 const groundGeometry = new THREE.PlaneBufferGeometry(80, 60);
