@@ -30,13 +30,12 @@ const bookMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff })
 //bookMaterial.map = shelfTexture
 bookMaterial.side = THREE.DoubleSide;
 
-const readerMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff })
-//bookMaterial.map = shelfTexture
-readerMaterial.side = THREE.DoubleSide;
 
 const readerTexture = textureLoader.load('/imports/shelf.jpg') 
 readerTexture.wrapS = THREE.MirroredRepeatWrapping; // horizontal wrapping
 readerTexture.wrapT = THREE.MirroredRepeatWrapping; // vertical wrapping
+const readerMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff })
+readerMaterial.side = THREE.DoubleSide;
 readerMaterial.map = readerTexture;
 
 const rugMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff })
@@ -143,7 +142,7 @@ function createShelf(x, y, z) {
 
 function createReader(x, y, z) {
   const readerMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff })
-  readerMaterial.map = wallTexture
+  readerMaterial.map = readerTexture
   readerMaterial.side = THREE.DoubleSide;
   const readerGeometry = new THREE.PlaneGeometry(10, 12);
   const reader = new THREE.Mesh(readerGeometry, readerMaterial);
@@ -174,7 +173,7 @@ for (let i=0; i < 4; i++) {
   let y = 4;
   let z = -20+i*13;
   createShelf(x,y,z);
-  createReader(x+8.5,y,z);
+  createReader(x+8.01,y,z);
 }
 
 scene.add(group);
@@ -183,6 +182,7 @@ scene.add(group2);
 
 // // chair
 const objLoader = new OBJLoader(manager);
+const objLoader2 = new OBJLoader(manager);
 
 function loadModel() {
 
@@ -235,15 +235,16 @@ mtlLoader.load('/imports/chair/model.mtl' , function(materials) {
   });
 });
 
+const mtlLoader2 = new MTLLoader();
 const lampMaterials = textureLoader.load('/womp/lamp/model.mtl');
 lampMaterials.colorSpace = THREE.SRGBColorSpace;
 
-mtlLoader.load('/womp/lamp/model.mtl', function(lampMaterials) {
+mtlLoader2.load('/womp/lamp/model.mtl', function(lampMaterials) {
   lampMaterials.preload();
 
   // Initialize OBJLoader
-  objLoader.setMaterials(lampMaterials); // Set the loaded materials to OBJLoader
-  objLoader.load('/womp/lamp/lamp.obj', function(object) {
+  objLoader2.setMaterials(lampMaterials); // Set the loaded materials to OBJLoader
+  objLoader2.load('/womp/lamp/lamp.obj', function(object) {
       object.scale.set(0.03, 0.03, 0.03); // Scale to half size in all dimensions
       scene.add(object);
       object.position.set(13, -1.5, -20); // Adjust position if needed
