@@ -1,8 +1,6 @@
 import * as THREE from "three";
-import Stats from "three/examples/jsm/libs/stats.module";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import GUI from "lil-gui";
-import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import {MTLLoader} from "three/examples/jsm/loaders/MTLLoader.js";
 
 // import {CSS2DRenderer, CSS2DObject} from "three/examples/jsm/renderers/CSS2DRenderer.js";
@@ -12,27 +10,34 @@ let knuffle;
 const manager = new THREE.LoadingManager(loadModel );
 
 const textureLoader = new THREE.TextureLoader(manager); 
-const rugTexture = textureLoader.load('/assets/textures/imports/rug.png') 
+const rugTexture = textureLoader.load('/imports/rug.png') 
 rugTexture.wrapS = THREE.MirroredRepeatWrapping; // horizontal wrapping
 rugTexture.wrapT = THREE.MirroredRepeatWrapping; // vertical wrapping
 rugTexture.repeat.set(10, 10); // how many times to repeat
 
-const wallpaperTexture = textureLoader.load('/assets/textures/imports/wallpaper.jpeg') 
+const wallpaperTexture = textureLoader.load('/imports/wallpaper.jpeg') 
 wallpaperTexture.wrapS = THREE.MirroredRepeatWrapping; // horizontal wrapping
 wallpaperTexture.wrapT = THREE.MirroredRepeatWrapping; // vertical wrapping
 wallpaperTexture.repeat.set(5, 3); // how many times to repeat
 
-const wallTexture = textureLoader.load('/assets/textures/imports/wall.avif') 
+const wallTexture = textureLoader.load('/imports/wall.avif') 
 wallTexture.wrapS = THREE.MirroredRepeatWrapping; // horizontal wrapping
 wallTexture.wrapT = THREE.MirroredRepeatWrapping; // vertical wrapping
 wallTexture.repeat.set(5, 3); // how many times to repeat
 
-const shelfTexture = textureLoader.load('/assets/textures/imports/shelf.jpg') 
-shelfTexture.wrapS = THREE.MirroredRepeatWrapping; // horizontal wrapping
-shelfTexture.wrapT = THREE.MirroredRepeatWrapping; // vertical wrapping
+
 const bookMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff })
-bookMaterial.map = shelfTexture
+//bookMaterial.map = shelfTexture
 bookMaterial.side = THREE.DoubleSide;
+
+const readerMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff })
+//bookMaterial.map = shelfTexture
+readerMaterial.side = THREE.DoubleSide;
+
+const readerTexture = textureLoader.load('/imports/shelf.jpg') 
+readerTexture.wrapS = THREE.MirroredRepeatWrapping; // horizontal wrapping
+readerTexture.wrapT = THREE.MirroredRepeatWrapping; // vertical wrapping
+readerMaterial.map = readerTexture;
 
 const rugMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff })
 rugMaterial.map = rugTexture
@@ -76,11 +81,11 @@ renderer.setClearColor(0xffffff);
 document.body.appendChild(renderer.domElement);
 
 // add lights
-scene.add(new THREE.AmbientLight(0x666666, 0.2));
+scene.add(new THREE.AmbientLight(0x666666, 2));
 const dirLight = new THREE.DirectionalLight(0xaaaaaa);
 dirLight.position.set(5, 12, 8);
 dirLight.castShadow = true;
-dirLight.intensity = 1;
+dirLight.intensity = 8;
 dirLight.shadow.camera.near = 0.1;
 dirLight.shadow.camera.far = 200;
 dirLight.shadow.camera.right = 10;
@@ -95,7 +100,7 @@ dirLight.shadow.bias = -0.1;
 scene.add(dirLight);
 
 const carpetGeometry = new THREE.CylinderGeometry(10, 15, 1, 10, 200);
-const carpetMaterial = new THREE.MeshToonMaterial({ color: 0xb56495});  
+const carpetMaterial = new THREE.MeshToonMaterial({ color: 0xb58499});  
 const carpet = new THREE.Mesh(carpetGeometry, carpetMaterial);
 carpet.position.x=5;
 carpet.position.y=-1.5;
@@ -104,7 +109,7 @@ carpet.castShadow = true;
 scene.add(carpet);
 
 const deskGeometry = new THREE.BoxGeometry(12, 6, 6);
-const deskMaterial = new THREE.MeshToonMaterial({ color: 0xb44425});  
+const deskMaterial = new THREE.MeshToonMaterial({ color: 0xb06425});  
 const desk = new THREE.Mesh(deskGeometry, deskMaterial);
 desk.position.x=20;
 desk.position.y=1;
@@ -124,13 +129,28 @@ scene.add(librarian);
 const group = new THREE.Group()
 group.name = 'bookshelfs'
 
+const group2 = new THREE.Group()
+group2.name = 'bookies'
+
 function createShelf(x, y, z) {
   const shelfGeometry = new THREE.BoxGeometry(4, 12, 10);
-  const shelfMaterial = new THREE.MeshToonMaterial({ color: 0xb54425 });  
+  const shelfMaterial = new THREE.MeshToonMaterial({ color: 0xb06425 });  
   const shelf = new THREE.Mesh(shelfGeometry, shelfMaterial);
   shelf.position.set(x,y,z);
   shelf.castShadow = true;
   group.add(shelf)
+}
+
+function createReader(x, y, z) {
+  const readerMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff })
+  readerMaterial.map = wallTexture
+  readerMaterial.side = THREE.DoubleSide;
+  const readerGeometry = new THREE.PlaneGeometry(10, 12);
+  const reader = new THREE.Mesh(readerGeometry, readerMaterial);
+  reader.position.set(x,y,z);
+  reader.rotation.set(0, Math.PI/2, 0);
+  reader.castShadow = true;
+  group2.add(reader)
 }
 
 for (let i=0; i < 4; i++) {
@@ -138,30 +158,31 @@ for (let i=0; i < 4; i++) {
   let y = 4;
   let z = -20+i*13;
   createShelf(x,y,z);
-  const shelfGeometry = new THREE.PlaneBufferGeometry;
+  const shelfGeometry = new THREE.PlaneGeometry();
   const shelfMesh = new THREE.Mesh(shelfGeometry, bookMaterial);
   shelfMesh.position.set(x,y,z);
   // shelfMesh.rotation.set(0, Math.PI / -2, 0);
   shelfMesh.receiveShadow = true;
   scene.add(shelfMesh);
+  createReader(x,y,z);
+  const readerGeometry = new THREE.PlaneGeometry(4, 12);
+  const readerMesh = new THREE.Mesh(readerGeometry, readerMaterial);
+  readerMesh.receiveShadow = true;
 }
 for (let i=0; i < 4; i++) {
   let x = -37;
   let y = 4;
   let z = -20+i*13;
   createShelf(x,y,z);
+  createReader(x+8.5,y,z);
 }
 
 scene.add(group);
+scene.add(group2);
 
 
-// chair
-const loader = new OBJLoader(manager);
-loader.load ('/assets/models/chair/chair.obj', function ( chair ) {
-  object = chair;
-  scene.add(chair);
-}
-)
+// // chair
+const objLoader = new OBJLoader(manager);
 
 function loadModel() {
 
@@ -171,17 +192,16 @@ function loadModel() {
 
   } );
 
-  object.position.x = 15;
-  object.position.y = -1.5;
-  object.position.z = -20;
-  object.rotation.set(0, Math.PI, 0);
-  object.scale.setScalar( 0.05 );
-  knuffle.position.x = 9;
-  knuffle.position.y = -1.5;
-  knuffle.position.z = -20;
-  knuffle.scale.setScalar(0.02);
-  scene.add( object );
-  scene.add (knuffle)
+  // object.position.x = 15;
+  // object.position.y = -1.5;
+  // object.position.z = -20;
+  // object.rotation.set(0, Math.PI, 0);
+  // object.scale.setScalar( 0.05 );
+  // knuffle.position.x = 9;
+  // knuffle.position.y = -1.5;
+  // knuffle.position.z = -20;
+  // knuffle.scale.setScalar(0.02);
+  // scene.add (knuffle)
 
 //   for (let i=0; i < 2; i++) {
 //     let x = 17+i*2;
@@ -198,32 +218,40 @@ function loadModel() {
 
 }
 
-loader.load ('/assets/womp/lamp/lamp.obj', function ( lamp ) {
-  knuffle = lamp;
-  scene.add(lamp);
-}
-)
-
 const mtlLoader = new MTLLoader();
-const texture = textureLoader.load('/assets/models/chair/model.mtl' );
-texture.colorSpace = THREE.SRGBColorSpace;
+const materials = textureLoader.load('/imports/chair/model.mtl' );
+materials.colorSpace = THREE.SRGBColorSpace;
 
-mtlLoader.load('/assets/models/chair/model.mtl' , function(materials) {
+mtlLoader.load('/imports/chair/model.mtl' , function(materials) {
   materials.preload();
 
   // Initialize OBJLoader
   objLoader.setMaterials(materials); // Set the loaded materials to OBJLoader
-  objLoader.load('/assets/models/chair/chair.obj', function(object) {
-      object.scale.set(0.01, 0.01, 0.01); // Scale to half size in all dimensions
+  objLoader.load('/imports/chair/chair.obj', function(object) {
+      object.scale.set(0.07, 0.07, 0.07); // Scale to half size in all dimensions
       scene.add(object);
-      object.position.set(0, 0, 0); // Adjust position if needed
+      object.rotation.set (0, Math.PI, 0);
+      object.position.set(5, -1.5, -20); // Adjust position if needed
   });
 });
 
+const lampMaterials = textureLoader.load('/womp/lamp/model.mtl');
+lampMaterials.colorSpace = THREE.SRGBColorSpace;
 
+mtlLoader.load('/womp/lamp/model.mtl', function(lampMaterials) {
+  lampMaterials.preload();
+
+  // Initialize OBJLoader
+  objLoader.setMaterials(lampMaterials); // Set the loaded materials to OBJLoader
+  objLoader.load('/womp/lamp/lamp.obj', function(object) {
+      object.scale.set(0.03, 0.03, 0.03); // Scale to half size in all dimensions
+      scene.add(object);
+      object.position.set(13, -1.5, -20); // Adjust position if needed
+  });
+});
 
 // create a ground plane
-const groundGeometry = new THREE.PlaneBufferGeometry(80, 60);
+const groundGeometry = new THREE.PlaneGeometry(80, 60);
 // const groundMaterial = new THREE.MeshLambertMaterial({
 //   color: 0x00ff88,
 // });
@@ -234,13 +262,13 @@ groundMesh.receiveShadow = true;
 scene.add(groundMesh);
 
 //walls
-const wallGeometry = new THREE.PlaneBufferGeometry(60, 30);
+const wallGeometry = new THREE.PlaneGeometry(60, 30);
 const wallMesh = new THREE.Mesh(wallGeometry, wallMaterial);
 wallMesh.position.set(-40, 13, 0);
 wallMesh.rotation.set(0, Math.PI / -2, 0);
 wallMesh.receiveShadow = true;
 scene.add(wallMesh);
-const sideWallGeometry = new THREE.PlaneBufferGeometry(30, 80);
+const sideWallGeometry = new THREE.PlaneGeometry(30, 80);
 const sideWallMesh = new THREE.Mesh(sideWallGeometry, wallMaterial);
 sideWallMesh.position.set(0, 13, 30);
 sideWallMesh.rotation.set(0, 0, Math.PI / -2);
@@ -267,7 +295,6 @@ controller.maxPolarAngle = (2 * Math.PI) / 4;
 // }
 
 // render the scene
-
 
 renderer.render(scene, camera);
 function animate() {
