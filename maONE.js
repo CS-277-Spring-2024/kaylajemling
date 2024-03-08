@@ -173,11 +173,43 @@ for (let i=0; i < 4; i++) {
   let y = 4;
   let z = -20+i*13;
   createShelf(x,y,z);
-  createReader(x+8.01,y,z);
+  createReader(x+8.02,y,z);
 }
 
 scene.add(group);
 scene.add(group2);
+
+const pointer = new THREE.Vector2();
+const raycaster = new THREE.Raycaster();
+
+const onMouseMove = (event) => {
+	// calculate pointer position in normalized device coordinates
+	// (-1 to +1) for both components
+	pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+	pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+  raycaster.setFromCamera( pointer, camera );
+  const intersects = raycaster.intersectObjects( scene.children );
+
+  for (let i = 0; i < intersects.length; i++) {
+      console.log(intersects);
+    }
+}
+
+// function displayBookTitles() {
+//   // Perform raycasting to detect intersections with the bookshelf
+//   const intersects = raycaster.intersectObjects(group, true);
+
+//   if (intersects.length > 0) {
+//       // // Display book titles when mouse hovers over bookshelf
+//       // displayTitlesOnScreen(bookTitles);
+//       console.log("Mouse moved!");
+//   // } else {
+//   //     // Hide book titles when mouse moves away from bookshelf
+//   //     hideTitlesOnScreen();
+//   }
+// }
+// document.addEventListener('mousemove', displayBookTitles);
 
 
 // // chair
@@ -191,28 +223,6 @@ function loadModel() {
     if ( child.isMesh ) child.material.map = texture;
 
   } );
-
-  // object.position.x = 15;
-  // object.position.y = -1.5;
-  // object.position.z = -20;
-  // object.rotation.set(0, Math.PI, 0);
-  // object.scale.setScalar( 0.05 );
-  // knuffle.position.x = 9;
-  // knuffle.position.y = -1.5;
-  // knuffle.position.z = -20;
-  // knuffle.scale.setScalar(0.02);
-  // scene.add (knuffle)
-
-//   for (let i=0; i < 2; i++) {
-//     let x = 17+i*2;
-//     let y = -1.5;
-//     let z = -20;
-//     object.position.set(x,y,z);
-//     object.rotation.set(0, Math.PI, 0);
-//     object.scale.setScalar( 0.05 );
-//     scene.add(object);
-
-//   }
 
   render();
 
@@ -251,6 +261,19 @@ mtlLoader2.load('/womp/lamp/model.mtl', function(lampMaterials) {
   });
 });
 
+//resize handler
+function onWindowResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+window.addEventListener('resize', onWindowResize);
+
+//text
+const followText = document.getElementById('app');
+const canvas = document.querySelector('canvas');
+const boxPosition = new THREE.Vector3();
+
 // create a ground plane
 const groundGeometry = new THREE.PlaneGeometry(80, 60);
 // const groundMaterial = new THREE.MeshLambertMaterial({
@@ -278,7 +301,7 @@ scene.add(sideWallMesh);
 
 // add orbitcontrols to pan around the scene using the mouse
 const controller = new OrbitControls(camera, renderer.domElement);
-controller.enableDamping = true;
+controller.enableDamping = false;
 controller.dampingFactor = 0.01;
 controller.minDistance = 0;
 controller.maxDistance = 100;
