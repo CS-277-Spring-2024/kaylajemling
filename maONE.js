@@ -2,22 +2,9 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import {MTLLoader} from "three/examples/jsm/loaders/MTLLoader.js";
-import bookTitles from '/bookTitles.js';
-
-const shelfMapping = [];
-
-for (let i = 0; i < 4; i++) {
-  const shelf = []; // Initialize an empty array for each shelf
-  for (let j = 30 * i; j < 30 * (i + 1); j++) {
-      shelf.push(j); // Push indices into the shelf array
-  }
-  shelfMapping.push({ [`shelf${i + 1}`]: shelf }); // Push shelf object into shelfMapping array
-}
-
-// import {CSS2DRenderer, CSS2DObject} from "three/examples/jsm/renderers/CSS2DRenderer.js";
+// import bookTitles from '/bookTitles.js';
 
 let object;
-let knuffle;
 const manager = new THREE.LoadingManager(loadModel );
 
 const textureLoader = new THREE.TextureLoader(manager); 
@@ -73,12 +60,6 @@ const camera = new THREE.PerspectiveCamera(
   camera.position.x = 15;
   camera.position.z = 8;
   camera.position.y = 2;
-
-//html
-// const labelRenderer = new CSS2DRenderer();
-// labelRenderer.setSize(window.innerWidth, window.innerHeight);
-// labelRenderer.domElement.style.top = '0px';
-// document.body.appendChild(labelRenderer.domElement);
 
 
 // setup the renderer and attach to canvas
@@ -173,6 +154,8 @@ for (let i=0; i < 4; i++) {
   shelfMesh.position.set(x,y,z);
   // shelfMesh.rotation.set(0, Math.PI / -2, 0);
   shelfMesh.receiveShadow = true;
+  shelfMesh.name = `shelf${i + 1}`;
+  console.log(shelfMesh.name);
   scene.add(shelfMesh);
   createReader(x,y,z);
   const readerGeometry = new THREE.PlaneGeometry(4, 12);
@@ -190,22 +173,6 @@ for (let i=0; i < 4; i++) {
 
 scene.add(group);
 scene.add(group2);
-
-// function displayBookTitles() {
-//   // Perform raycasting to detect intersections with the bookshelf
-//   const intersects = raycaster.intersectObjects(group, true);
-
-//   if (intersects.length > 0) {
-//       // // Display book titles when mouse hovers over bookshelf
-//       // displayTitlesOnScreen(bookTitles);
-//       console.log("Mouse moved!");
-//   // } else {
-//   //     // Hide book titles when mouse moves away from bookshelf
-//   //     hideTitlesOnScreen();
-//   }
-// }
-// document.addEventListener('mousemove', displayBookTitles);
-
 
 // // chair
 const objLoader = new OBJLoader(manager);
@@ -273,10 +240,6 @@ function onWindowResize() {
 }
 window.addEventListener('resize', onWindowResize);
 
-//text
-const followText = document.getElementById('app');
-const canvas = document.querySelector('canvas');
-const boxPosition = new THREE.Vector3();
 
 // create a ground plane
 const groundGeometry = new THREE.PlaneGeometry(80, 60);
@@ -303,30 +266,18 @@ sideWallMesh.rotation.set(0, 0, Math.PI / -2);
 sideWallMesh.receiveShadow = true;
 scene.add(sideWallMesh);
 
-console.log(group2.visible);
+const shelfMapping = [];
 
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
-let shelfMesh;
-
-const onMouseMove = (event) => {
-	// calculate pointer position in normalized device coordinates
-	// (-1 to +1) for both components
-	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-  raycaster.setFromCamera( mouse, camera );
-  console.log('mouse moving!')
+for (let i = 0; i < 4; i++) {
+  const shelf = []; // Initialize an empty array for each shelf
+  for (let j = 30 * i; j < 30 * (i + 1); j++) {
+      shelf.push(j); // Push indices into the shelf array
+  }
+  shelfMapping.push(shelf); // Push shelf object into shelfMapping array
 }
 
-shelfMesh.addEventListener('mousehover', onMouseMove);
+console.log(shelfMapping);
 
-// // const intersects = raycaster.intersectObjects( shelfMesh );
-
-//   for (let i = 0; i < intersects.length; i++) {
-//       console.log('intersects');
-//     }
-
-// add orbitcontrols to pan around the scene using the mouse
 const controller = new OrbitControls(camera, renderer.domElement);
 controller.enableDamping = false;
 controller.dampingFactor = 0.01;
@@ -335,15 +286,42 @@ controller.maxDistance = 100;
 controller.minPolarAngle = 2 / 4;
 controller.maxPolarAngle = (2 * Math.PI) / 4;
 
-// import { FirstPersonControls } from 'three/examples/jsm/controls/FirstPersonControls'
-// const controls = new FirstPersonControls(camera, renderer.
-// domElement)
-// const clock = new THREE.Clock()
-// function animate() {
-// requestAnimationFrame(animate)
-// renderer.render(scene, camera)
-// controls.update(clock.getDelta())
-// }
+const bookshelves = [];
+
+document.addEventListener('click', onClickBookshelf);
+
+bookshelves.forEach(bookshelf => {
+  bookshelf.addEventListener('click', onClickBookshelf);
+});
+
+function onClickBookshelf(event) {
+  const clickedBookshelf = event.target; // Get the clicked bookshelf object
+  const mouse = new THREE.Vector2();
+  mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+  const raycaster = new THREE.Raycaster();
+  raycaster.setFromCamera( mouse, camera );
+  const intersects = raycaster.intersectObject(group2);
+
+  if (intersects.length > 0) {
+    // For simplicity, let's assume the first intersected object is the bookshelf
+    const clickedBookshelf = intersects[0].object;
+
+  // Step 3: Load Next Image or Riddle
+  loadNextImage();
+}
+
+function loadNextImage(){
+  console.log ('Thats right! The answer is Black Beauty, by Anna Sewell. Zoom out to see the next riddle.')
+  const watership = textureLoader.load('/imports/watership.png');
+  const watershipMaterial = new THREE.SpriteMaterial ({map:watership})
+  watershipMaterial.colorSpace = THREE.SRGBColorSpace;
+
+  const sprite2 = new THREE.Sprite(watershipMaterial);
+  sprite2.scale.set(20, 20, 1)
+  sprite2.position.set(30, 10, 15)
+  scene.add( sprite2 );
+}
 
 // render the scene
 function render(){
@@ -351,7 +329,6 @@ function render(){
   const intersects = raycaster.intersectObjects(scene.children, true);	
 				if ( intersects.length > 0 ) {
 				  intersects.forEach(intersect => {
-          console.log('Intersected with object:', intersect.object.name);
         });
 				}
   renderer.render(scene, camera);
@@ -365,7 +342,7 @@ function animate() {
   // labelRenderer.render(scene, camera);
 }
 animate();
-
+}
 
 
 // window.addEventListener('resize', function() {
@@ -376,3 +353,24 @@ animate();
 // });
 
 // // renderer.render(scene, camera)
+
+// const onMouseMove = (event) => {
+// 	// calculate pointer position in normalized device coordinates
+// 	// (-1 to +1) for both components
+// 	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+// 	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+//   raycaster.setFromCamera( mouse, camera );
+//   const intersects = raycaster.intersectObject(group2);
+
+//   if (intersects.length > 0) {
+//     // Get the index of the intersected shelf (or point on shelf)
+//     const intersectedShelfIndex = intersects[0].object.userData.shelfIndex;
+
+//     // Retrieve book titles for the intersected shelf
+//     const shelfIndices = Object.values(shelfMapping[intersectedShelfIndex])[0];
+//     const bookTitlesForShelf = shelfIndices.map(index => bookTitles[index]);
+
+//     // Log book titles to the console for testing
+//     console.log("Book titles:", bookTitlesForShelf);
+// }
+// }
