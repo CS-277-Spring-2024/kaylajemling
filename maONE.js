@@ -2,6 +2,17 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import {MTLLoader} from "three/examples/jsm/loaders/MTLLoader.js";
+import bookTitles from '/bookTitles.js';
+
+const shelfMapping = [];
+
+for (let i = 0; i < 4; i++) {
+  const shelf = []; // Initialize an empty array for each shelf
+  for (let j = 30 * i; j < 30 * (i + 1); j++) {
+      shelf.push(j); // Push indices into the shelf array
+  }
+  shelfMapping.push({ [`shelf${i + 1}`]: shelf }); // Push shelf object into shelfMapping array
+}
 
 // import {CSS2DRenderer, CSS2DObject} from "three/examples/jsm/renderers/CSS2DRenderer.js";
 
@@ -168,6 +179,7 @@ for (let i=0; i < 4; i++) {
   const readerMesh = new THREE.Mesh(readerGeometry, readerMaterial);
   readerMesh.receiveShadow = true;
 }
+
 for (let i=0; i < 4; i++) {
   let x = -37;
   let y = 4;
@@ -178,23 +190,6 @@ for (let i=0; i < 4; i++) {
 
 scene.add(group);
 scene.add(group2);
-
-const pointer = new THREE.Vector2();
-const raycaster = new THREE.Raycaster();
-
-const onMouseMove = (event) => {
-	// calculate pointer position in normalized device coordinates
-	// (-1 to +1) for both components
-	pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-	pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-
-  raycaster.setFromCamera( pointer, camera );
-  const intersects = raycaster.intersectObjects( scene.children );
-
-  for (let i = 0; i < intersects.length; i++) {
-      console.log(intersects);
-    }
-}
 
 // function displayBookTitles() {
 //   // Perform raycasting to detect intersections with the bookshelf
@@ -227,6 +222,15 @@ function loadModel() {
   render();
 
 }
+
+const beauty = textureLoader.load('/imports/beauty.png');
+const beautyMaterial = new THREE.SpriteMaterial ({map:beauty})
+beautyMaterial.colorSpace = THREE.SRGBColorSpace;
+
+const sprite1 = new THREE.Sprite(beautyMaterial);
+sprite1.scale.set(20, 20, 1)
+sprite1.position.set(30, 10, 15)
+scene.add( sprite1 );
 
 const mtlLoader = new MTLLoader();
 const materials = textureLoader.load('/imports/chair/model.mtl' );
@@ -299,6 +303,29 @@ sideWallMesh.rotation.set(0, 0, Math.PI / -2);
 sideWallMesh.receiveShadow = true;
 scene.add(sideWallMesh);
 
+console.log(group2.visible);
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+let shelfMesh;
+
+const onMouseMove = (event) => {
+	// calculate pointer position in normalized device coordinates
+	// (-1 to +1) for both components
+	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+  raycaster.setFromCamera( mouse, camera );
+  console.log('mouse moving!')
+}
+
+shelfMesh.addEventListener('mousehover', onMouseMove);
+
+// // const intersects = raycaster.intersectObjects( shelfMesh );
+
+//   for (let i = 0; i < intersects.length; i++) {
+//       console.log('intersects');
+//     }
+
 // add orbitcontrols to pan around the scene using the mouse
 const controller = new OrbitControls(camera, renderer.domElement);
 controller.enableDamping = false;
@@ -319,15 +346,27 @@ controller.maxPolarAngle = (2 * Math.PI) / 4;
 // }
 
 // render the scene
+function render(){
+  raycaster.setFromCamera( mouse, camera );
+  const intersects = raycaster.intersectObjects(scene.children, true);	
+				if ( intersects.length > 0 ) {
+				  intersects.forEach(intersect => {
+          console.log('Intersected with object:', intersect.object.name);
+        });
+				}
+  renderer.render(scene, camera);
+}
 
-renderer.render(scene, camera);
+
 function animate() {
   requestAnimationFrame(animate);
-  renderer.render(scene, camera);
+  render();
   controller.update();
   // labelRenderer.render(scene, camera);
 }
 animate();
+
+
 
 // window.addEventListener('resize', function() {
 //   camera.aspect = window.innerWidth / window.innerHeight;
