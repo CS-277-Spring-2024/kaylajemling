@@ -5,7 +5,7 @@ import {MTLLoader} from "three/examples/jsm/loaders/MTLLoader.js";
 // import bookTitles from '/bookTitles.js';
 
 let object;
-const manager = new THREE.LoadingManager(loadModel );
+const manager = new THREE.LoadingManager(loadModel);
 
 const textureLoader = new THREE.TextureLoader(manager); 
 const rugTexture = textureLoader.load('/imports/rug.png') 
@@ -155,7 +155,6 @@ for (let i=0; i < 4; i++) {
   // shelfMesh.rotation.set(0, Math.PI / -2, 0);
   shelfMesh.receiveShadow = true;
   shelfMesh.name = `shelf${i + 1}`;
-  console.log(shelfMesh.name);
   scene.add(shelfMesh);
   createReader(x,y,z);
   const readerGeometry = new THREE.PlaneGeometry(4, 12);
@@ -180,7 +179,7 @@ const objLoader2 = new OBJLoader(manager);
 
 function loadModel() {
 
-  object.traverse( function ( child ) {
+  object( function ( child ) {
 
     if ( child.isMesh ) child.material.map = texture;
 
@@ -276,7 +275,6 @@ for (let i = 0; i < 4; i++) {
   shelfMapping.push(shelf); // Push shelf object into shelfMapping array
 }
 
-console.log(shelfMapping);
 
 const controller = new OrbitControls(camera, renderer.domElement);
 controller.enableDamping = false;
