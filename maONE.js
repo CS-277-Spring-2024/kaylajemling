@@ -287,6 +287,7 @@ controller.minPolarAngle = 2 / 4;
 controller.maxPolarAngle = (2 * Math.PI) / 4;
 
 const bookshelves = [];
+let clickCounter = 0;
 
 document.addEventListener('click', onClickBookshelf);
 
@@ -306,21 +307,38 @@ function onClickBookshelf(event) {
   if (intersects.length > 0) {
     // For simplicity, let's assume the first intersected object is the bookshelf
     const clickedBookshelf = intersects[0].object;
+    clickCounter++;
 
   // Step 3: Load Next Image or Riddle
   loadNextImage();
 }
 
 function loadNextImage(){
-  console.log ('Thats right! The answer is Black Beauty, by Anna Sewell. Zoom out to see the next riddle.')
-  const watership = textureLoader.load('/imports/watership.png');
-  const watershipMaterial = new THREE.SpriteMaterial ({map:watership})
-  watershipMaterial.colorSpace = THREE.SRGBColorSpace;
+  if (clickCounter === 1) {
+    console.log ('Thats right! The answer is Black Beauty, by Anna Sewell. Zoom out to see the next riddle.')
+    const watership = textureLoader.load('/imports/watership.png');
+    const watershipMaterial = new THREE.SpriteMaterial ({map:watership})
+    watershipMaterial.colorSpace = THREE.SRGBColorSpace;
 
-  const sprite2 = new THREE.Sprite(watershipMaterial);
-  sprite2.scale.set(20, 20, 1)
-  sprite2.position.set(30, 10, 15)
-  scene.add( sprite2 );
+    const sprite2 = new THREE.Sprite(watershipMaterial);
+    sprite2.scale.set(20, 20, 1)
+    sprite2.position.set(30, 10, 15)
+    scene.add( sprite2 );
+
+  } else if (clickCounter === 2) {
+    console.log ('Great job! The answer is Watership Down, by Richard Adams. Zoom out to see the final riddle.')
+    const stars = textureLoader.load('/imports/stars.png');
+    const starsMaterial = new THREE.SpriteMaterial ({map:stars})
+    starsMaterial.colorSpace = THREE.SRGBColorSpace;
+
+    const sprite3 = new THREE.Sprite(starsMaterial);
+    sprite3.scale.set(20, 20, 1)
+    sprite3.position.set(30, 10, 15)
+    scene.add( sprite3 );
+  } else if (clickCounter === 3) {
+    console.log ('You did it! The answer is The Fault in Our Stars, by John Green.')
+    console.log ('Congratulations, you have successfully escaped this library! The bookworms will not get to you... tonight 🪱😚')
+  }
 }
 
 // render the scene
